@@ -1,0 +1,99 @@
+<div
+  class="w-[250px] h-[250px] sm:w-[400px] sm:h-[400px] flex items-center justify-center rounded-full bg-neutral-200/30 backdrop-blur-lg border border-neutral-200/50 shadow-sm"
+>
+  <div class="flex flex-col justify-center text-neutral-100/70 gap-2">
+    <span id="mode" class="text-xl sm:text-2xl text-center">Work</span>
+    <h3 id="timer" class="relative text-5xl sm:text-7xl font-bold">25:00</h3>
+    <button id="pause-button" class="text-xl sm:text-2xl">Start</button>
+  </div>
+</div>
+
+<script>
+  import { type Timer } from "../types.d";
+  let currentInterval: number | null = null;
+  const timer: Timer = {
+    mode: "work",
+    seconds: 25 * 60,
+    counter: 0,
+    paused: true,
+  };
+
+  const button = document.getElementById("pause-button");
+  const timerEl = document.getElementById("timer");
+  const modeEl = document.getElementById("mode");
+  const alarmAudio = new Audio("/audio/alarm.wav");
+
+  function formatTimer(seconds: number): string {
+    const formatter = new Intl.NumberFormat("en", {
+      minimumIntegerDigits: 2,
+    });
+    return `${formatter.format(Math.floor(seconds / 60))}:${formatter.format(
+      seconds % 60
+    )}`;
+  }
+
+  function toggleButtonLabel(): void {
+    button.innerHTML = timer.paused ? "Start" : "Pause";
+  }
+
+  function setUi() {
+    const modeLabels = {
+      work: "Work",
+      break: "Short Break",
+      longBreak: "Long Break",
+    };
+    const formatedTimer = formatTimer(timer.seconds);
+    const modeLabel = modeLabels[timer.mode];
+    timerEl.innerHTML = formatedTimer;
+    modeEl.innerHTML = `${modeLabel} #${timer.counter}`;
+    document.title = `${formatedTimer} - ${modeLabel}`;
+  }
+
+  function playAlarm() {
+    alarmAudio.volume = 0.3;
+    alarmAudio.loop = true;
+    alarmAudio.play();
+  }
+
+  function startTimer(): void {
+    alarmAudio.pause();
+    setUi();
+    clearInterval(currentInterval);
+    currentInterval = setInterval(() => {
+      if (timer.paused) return;
+      timer.seconds--;
+      setUi();
+      if (timer.seconds !== 0) return;
+      playAlarm();
+      clearInterval(currentInterval);
+      timer.paused = true;
+      toggleButtonLabel();
+
+      if (timer.mode === "work") {
+        timer.counter++;
+        if (timer.counter === 4) {
+          timer.mode = "longBreak";
+          timer.seconds = 15 * 60;
+        } else {
+          timer.mode = "break";
+          timer.seconds = 5 * 60;
+        }
+      } else {
+        timer.mode = "work";
+        timer.seconds = 25 * 60;
+      }
+
+      setUi();
+    }, 1000);
+  }
+
+  button.addEventListener("click", () => {
+    const audio = new Audio("/audio/start.wav");
+    audio.volume = 0.1;
+    audio.play();
+    timer.paused = !timer.paused;
+    clearInterval(currentInterval);
+    toggleButtonLabel();
+    if (!timer.paused) startTimer();
+  });
+</script>

@@ -1,0 +1,43 @@
+---
+interface Props {
+  title: string;
+}
+
+const { title } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="description" content="Astro description" />
+    <meta name="viewport" content="width=device-width" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="generator" content={Astro.generator} />
+    <title>{title}</title>
+  </head>
+  <body class="h-screen overflow-hidden">
+    <slot />
+  </body>
+</html>
+
+<style is:global>
+  body {
+    /* background-image: linear-gradient(120deg, #fccb90 0%, #d57eeb 100%); */
+    background: linear-gradient(300deg, #e516e7, #f9c066, #b666f9, #66f9af);
+    background-size: 240% 240%;
+    animation: gradient-animation 30s ease infinite;
+  }
+
+  @keyframes gradient-animation {
+    0% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+    100% {
+      background-position: 0% 50%;
+    }
+  }
+</style>
